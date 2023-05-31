@@ -1,0 +1,80 @@
+version: "3"
+
+services:
+  log-rpc-service:
+    build:
+      context: ./
+      dockerfile: ./LogRPCService/Dockerfile
+    container_name: log-rpc-service
+    ports:
+     - 8080:8080
+    networks:
+      - app-network
+
+  card-service:
+    build:
+      context: ./
+      dockerfile: ./CardService/Dockerfile
+    ports:
+     - 8081:8080
+    container_name: card-service
+    networks:
+      - app-network
+
+  user-service:
+    build:
+      context: ./
+      dockerfile: ./UserService/Dockerfile
+    container_name: user-service
+    ports:
+     - 8082:8080
+    networks:
+      - app-network
+  
+  store-service:
+    build:
+      context: ./
+      dockerfile: ./StoreService/Dockerfile
+    ports:
+     - 8083:8080
+    container_name: store-service
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./
+      dockerfile: ./AuthService/Dockerfile
+    ports:
+     - 8084:8080
+    container_name: auth-service
+    networks:
+      - app-network
+    
+  frontend-angular:
+    build:
+      context: ./
+      dockerfile: ./PocheCard_Front/Dockerfile
+    container_name: frontend-angular
+    networks:
+      - app-network
+
+  reverse-proxy:
+    image: nginx
+    ports:
+      - 80:80
+    container_name: reverse-proxy
+    volumes:
+      - ./reverseProxy/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - app-network
+    depends_on:
+      - auth-service
+      - user-service
+      - card-service
+      - store-service
+      - frontend-angular  
+ 
+networks:
+  app-network:
+    name: app-network
