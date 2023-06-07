@@ -16,6 +16,8 @@ services:
     container_name: card-service
     networks:
       - app-network
+    depends_on:
+      - db-card
 
   user-service:
     build:
@@ -24,6 +26,8 @@ services:
     container_name: user-service
     networks:
       - app-network
+    depends_on:
+      - db-user
   
   store-service:
     build:
@@ -32,6 +36,8 @@ services:
     container_name: store-service
     networks:
       - app-network
+    depends_on:
+      - db-store
 
   auth-service:
     build:
@@ -40,6 +46,8 @@ services:
     container_name: auth-service
     networks:
       - app-network
+    depends_on:
+      - db-auth
     
   frontend-angular:
     build:
@@ -48,6 +56,62 @@ services:
     container_name: frontend-angular
     networks:
       - app-network
+
+  db-card:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - "5432"
+    networks:
+      - app-network  
+    volumes: 
+      - db-card:/var/lib/postgresql/data
+      - ./CardService/src/main/resources/db-card.sql:/docker-entrypoint-initdb.d/01-init.sql
+  
+  db-user:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - "5432"
+    networks:
+      - app-network  
+    volumes: 
+      - db-user:/var/lib/postgresql/data
+      - ./UserService/src/main/resources/db-user.sql:/docker-entrypoint-initdb.d/01-init.sql
+  
+  db-store:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - "5432"
+    networks:
+      - app-network     
+    volumes: 
+      - db-store:/var/lib/postgresql/data
+      - ./StoreService/src/main/resources/db-store.sql:/docker-entrypoint-initdb.d/01-init.sql
+    
+  db-auth:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - "5432"
+    networks:
+      - app-network     
+    volumes: 
+      - db-auth:/var/lib/postgresql/data
+      - ./AuthService/src/main/resources/db-auth.sql:/docker-entrypoint-initdb.d/01-init.sql
 
   reverse-proxy:
     image: nginx
@@ -68,3 +132,13 @@ services:
 networks:
   app-network:
     name: app-network
+
+volumes:
+  db-card:
+    driver: local
+  db-user:
+    driver: local
+  db-store:
+    driver: local
+  db-auth:
+    driver: local
